@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean id="dataSource"
+		class="org.springframework.jndi.JndiObjectFactoryBean"
+		destroy-method="close">
+		<property name="jndiName">
+			<value>java:comp/env/jdbc/mldn</value>
+		</property>
+	</bean>
+	<!--
+		<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName">
+		<value>org.gjt.mm.mysql.Driver</value>
+		</property>
+		<property name="url">
+		<value>jdbc:mysql://localhost:3306/mldn</value>
+		</property>
+		<property name="username">
+		<value>root</value>
+		</property>
+		<property name="password">
+		<value>mysqladmin</value>
+		</property>
+		</bean>
+	-->
+
+	<bean id="hibernateInterceptor"
+		class="org.springframework.orm.hibernate3.HibernateInterceptor">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect
+				</prop>
+				<!-- 表示允许自动提交 -->
+				<prop key="hibernate.connection.autocommit">true</prop>
+				<!-- 显示sql语句 -->
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+		<property name="mappingResources">
+			<list>
+				<value>org/lxh/myzngt/vo/Admin.hbm.xml</value>
+				<value>org/lxh/myzngt/vo/User.hbm.xml</value>
+				<value>org/lxh/myzngt/vo/Item.hbm.xml</value>
+				<value>org/lxh/myzngt/vo/Subitem.hbm.xml</value>
+				<value>org/lxh/myzngt/vo/Answer.hbm.xml</value>
+				<value>org/lxh/myzngt/vo/Question.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="hibernateTemplate"
+		class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+	<bean id="iuserdao" class="org.lxh.myzngt.dao.IUserDAO"
+		abstract="true">
+	</bean>
+	<bean id="iitemdao" class="org.lxh.myzngt.dao.IItemDAO"
+		abstract="true">
+	</bean>
+	<bean id="iquestiondao" class="org.lxh.myzngt.dao.IQuestionDAO"
+		abstract="true">
+	</bean>
+	<bean id="ianswerdao" class="org.lxh.myzngt.dao.IAnswerDAO"
+		abstract="true">
+	</bean>
+	<bean id="isubitemdao" class="org.lxh.myzngt.dao.ISubitemDAO"
+		abstract="true">
+	</bean>
+	<bean id="iadmindao" class="org.lxh.myzngt.dao.IAdminDAO"
+		abstract="true">
+	</bean>
+	<bean id="iadmindaoimpl"
+		class="org.lxh.myzngt.dao.impl.IAdminDAOImpl" parent="iadmindao">
+		<property name="hibernateTemplate">
+			<ref bean="hibernateTemplate" />
+		</property>
+	</bean>
+	<bean id="isubitemdaoimpl"
+		class="org.lxh.myzngt.dao.impl.ISubitemDAOImpl"
+		parent="isubitemdao">
+		<property name="hibernateTemplate">
+			<ref bean="hibernateTemplate" />
+		</property>
+	</bean>
+	<bean id="ianswerdaoimpl"
+		class="org.lxh.myzngt.dao.impl.IAnswerDAOImpl" parent="ianswerdao">
+		<property name="hibernateTemplate">
+			<ref bean="hibernateTemplate" />
+		</property>
+	</bean>
+	<bean id="iquestiondaoimpl"
+		class="org.lxh.myzngt.dao.impl.IQuestionDAOImpl"
+		parent="iquestiondao">
+		<property name="hibernateTemplate">
+			<ref bean="hibernateTemplate" />
+		</property>
+	</bean>
+	<bean id="iitemdaoimpl" class="org.lxh.myzngt.dao.impl.IItemDAOImpl"
+		parent="iitemdao">
+		<property name="hibernateTemplate">
+			<ref bean="hibernateTemplate" />
+		</property>
+	</bean>
+	<bean id="iuserdaoimpl" class="org.lxh.myzngt.dao.impl.IUserDAOImpl"
+		parent="iuserdao">
+		<property name="hibernateTemplate">
+			<ref bean="hibernateTemplate" />
+		</property>
+	</bean>
+	<bean name="/jsp/user"
+		class="org.lxh.myzngt.struts.action.UserAction">
+		<property name="iuserdao">
+			<ref bean="iuserdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/ques/item"
+		class="org.lxh.myzngt.struts.action.ItemAction" singleton="true">
+		<property name="iitemdao">
+			<ref bean="iitemdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/ques/question"
+		class="org.lxh.myzngt.struts.action.QuestionAction">
+		<property name="iquestiondao">
+			<ref bean="iquestiondaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/index"
+		class="org.lxh.myzngt.struts.action.IndexAction">
+		<property name="iitemdao">
+			<ref bean="iitemdaoimpl" />
+		</property>
+		<property name="iquestiondao">
+			<ref bean="iquestiondaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/show"
+		class="org.lxh.myzngt.struts.action.ShowAction">
+		<property name="iquestiondao">
+			<ref bean="iquestiondaoimpl" />
+		</property>
+		<property name="iitemdao">
+			<ref bean="iitemdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/ques/answer"
+		class="org.lxh.myzngt.struts.action.AnswerAction">
+		<property name="ianswerdao">
+			<ref bean="ianswerdaoimpl" />
+		</property>
+		<property name="iuserdao">
+			<ref bean="iuserdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/user/userinfo"
+		class="org.lxh.myzngt.struts.action.UserinfoAction">
+		<property name="iquestiondao">
+			<ref bean="iquestiondaoimpl" />
+		</property>
+		<property name="ianswerdao">
+			<ref bean="ianswerdaoimpl" />
+		</property>
+		<property name="iuserdao">
+			<ref bean="iuserdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/admin/admin"
+		class="org.lxh.myzngt.struts.action.AdminAction">
+		<property name="iadmindao">
+			<ref bean="iadmindaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/adminlogin"
+		class="org.lxh.myzngt.struts.action.AdminloginAction">
+		<property name="iadmindao">
+			<ref bean="iadmindaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/admin/adminuser"
+		class="org.lxh.myzngt.struts.action.AdminuserAction">
+		<property name="iuserdao">
+			<ref bean="iuserdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/admin/adminquestion"
+		class="org.lxh.myzngt.struts.action.AdminquestionAction">
+		<property name="iquestiondao">
+			<ref bean="iquestiondaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/admin/adminitem"
+		class="org.lxh.myzngt.struts.action.AdminitemAction">
+		<property name="iitemdao">
+			<ref bean="iitemdaoimpl" />
+		</property>
+	</bean>
+	<bean name="/jsp/admin/adminsubitem"
+		class="org.lxh.myzngt.struts.action.AdminsubitemAction">
+		<property name="isubitemdao">
+			<ref bean="isubitemdaoimpl" />
+		</property>
+		<property name="iitemdao">
+			<ref bean="iitemdaoimpl" />
+		</property>
+	</bean>
+</beans>
